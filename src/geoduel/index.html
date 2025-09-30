@@ -677,6 +677,14 @@
             const player = isHost ? 'player1' : 'player2';
             if (gameState.chances[player] <= 0) return;
             
+            // Check if this country has already been guessed
+            const paths = findCountryPaths(countryId);
+            const alreadyGuessed = paths.some(path => 
+                path.classList.contains('correct-guess') || 
+                path.classList.contains('incorrect-guess') || 
+                path.classList.contains('opponent-incorrect-guess')
+            );
+            
             gameState.chances[player]--;
             conn.send({ type: 'guess', countryId: countryId, player: player });
 
