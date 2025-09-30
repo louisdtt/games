@@ -164,13 +164,12 @@
         <section class="games-section">
             <div class="section-header fade-in-delay-1">
                 <h2 class="heading-2">Available Games</h2>
-                <p class="text-muted">Choose your adventure and start playing with friends</p>
+                <p class="text-muted">All games are peer-to-peer</p>
             </div>
             
             <div class="game-grid">
                 <!-- GeoDuel Game -->
                 <div class="card card-interactive game-tile fade-in-delay-2" onclick="window.location.href='./geoduel/'" role="button" tabindex="0" onkeypress="handleKeyPress(event, './geoduel/')">
-                    <div class="badge badge-popular">Popular</div>
                     <div class="game-content">
                         <div class="game-icon">🌍</div>
                         <h3 class="heading-3 text-center">Geo Duel</h3>
@@ -192,9 +191,31 @@
                     </div>
                 </div>
                 
+                <!-- FlagFight Game -->
+                <div class="card card-interactive game-tile fade-in-delay-3" onclick="window.location.href='./flagfight/'" role="button" tabindex="0" onkeypress="handleKeyPress(event, './flagfight/')">
+                    <div class="game-content">
+                        <div class="game-icon">🏴</div>
+                        <h3 class="heading-3 text-center">Flag Fight</h3>
+                        <p class="game-description">
+                            Fast-paced multiplayer flag guessing game! Up to 8 players compete in 10-second rounds. 
+                            Identify flags from around the world and climb the leaderboard.
+                        </p>
+                        <div class="game-meta">
+                            <div class="player-count">
+                                <span>👥</span>
+                                <span>2-8 Players</span>
+                            </div>
+                            <div class="difficulty-indicator" title="Difficulty: Hard">
+                                <div class="difficulty-dot active"></div>
+                                <div class="difficulty-dot active"></div>
+                                <div class="difficulty-dot active"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Work in Progress -->
-                <div class="card card-interactive game-tile coming-soon fade-in-delay-3" tabindex="0">
-                    <div class="badge badge-coming-soon">WIP</div>
+                <div class="card card-interactive game-tile coming-soon fade-in-delay-4" tabindex="0">
                     <div class="game-content">
                         <div class="game-icon">🚧</div>
                         <h3 class="heading-3 text-center">More Games</h3>
@@ -280,10 +301,11 @@
         
         // Track clicks on available games
         document.addEventListener('DOMContentLoaded', function() {
-            const geoDuelTile = document.querySelector('.game-tile:not(.coming-soon)');
-            if (geoDuelTile) {
-                geoDuelTile.addEventListener('click', () => trackGameClick('GeoDuel'));
-            }
+            const gameTiles = document.querySelectorAll('.game-tile:not(.coming-soon)');
+            gameTiles.forEach((tile, index) => {
+                const gameName = index === 0 ? 'GeoDuel' : index === 1 ? 'FlagFight' : 'Unknown';
+                tile.addEventListener('click', () => trackGameClick(gameName));
+            });
         });
     </script>
 </body>
