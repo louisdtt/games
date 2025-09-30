@@ -685,6 +685,10 @@
                 path.classList.contains('opponent-incorrect-guess')
             );
             
+            if (alreadyGuessed) {
+                return;
+            }
+            
             gameState.chances[player]--;
             conn.send({ type: 'guess', countryId: countryId, player: player });
 
