@@ -297,7 +297,8 @@
             currentFlag: null,
             roundTimer: ROUND_TIME,
             roundActive: false,
-            roundWinner: null
+            roundWinner: null,
+            availableCountries: []
         };
 
         // --- Country Data ---
@@ -372,6 +373,26 @@
 
         function getFlagClass(countryCode) {
             return `fi fi-${countryCode}`;
+        }
+
+        function shuffleArray(array) {
+            const shuffled = array.slice();
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function initializeCountryPool() {
+            gameState.availableCountries = shuffleArray(countries);
+        }
+
+        function getNextCountry() {
+            if (!gameState.availableCountries || gameState.availableCountries.length === 0) {
+                return null;
+            }
+            return gameState.availableCountries.shift();
         }
 
         function normalizeGuess(guess) {
@@ -575,10 +596,11 @@
                     guessInput.disabled = true;
                     
                     const winner = gameState.players.get(data.winner);
+                    const correctAnswer = data.correctAnswer || (gameState.currentFlag && gameState.currentFlag.names ? gameState.currentFlag.names[0] : 'the country');
                     if (data.winner === myPlayerId) {
-                        messageArea.textContent = 'You won the round! 🎉';
+                        messageArea.textContent = `You won the round! 🎉 It was ${correctAnswer}.`;
                     } else {
-                        messageArea.textContent = `${winner.name} won the round!`;
+                        messageArea.textContent = `${winner.name} won the round! It was ${correctAnswer}.`;
                     }
                     break;
                     
@@ -625,6 +647,8 @@
             startGameBtn.classList.add('hidden');
             setupScreen.classList.add('hidden');
             gameScreen.classList.remove('hidden');
+
+            initializeCountryPool();
             
             // Initialize UI for host
             updateUI();
@@ -640,14 +664,19 @@
         function startNewRound() {
             if (!isHost) return;
             
-            const randomCountry = countries[Math.floor(Math.random() * countries.length)];
-            gameState.currentFlag = randomCountry;
+            let nextCountry = getNextCountry();
+            if (!nextCountry) {
+                initializeCountryPool();
+                nextCountry = getNextCountry();
+            }
+
+            gameState.currentFlag = nextCountry;
             gameState.roundActive = true;
             gameState.roundWinner = null;
             
             const roundData = {
                 type: 'new-round',
-                country: randomCountry,
+                country: nextCountry,
                 round: gameState.currentRound
             };
             
@@ -656,7 +685,7 @@
             // Handle for host
             startRoundTimer();
             updateUI();
-            showFlag(randomCountry);
+            showFlag(nextCountry);
             messageArea.textContent = 'New round! Guess the flag!';
             guessInput.disabled = false;
             guessInput.focus();
@@ -744,10 +773,11 @@
                 guessInput.disabled = true;
                 
                 const winner = gameState.players.get(playerId);
+                const correctAnswer = gameState.currentFlag ? gameState.currentFlag.names[0] : 'the country';
                 if (playerId === myPlayerId) {
-                    messageArea.textContent = 'You won the round! 🎉';
+                    messageArea.textContent = `You won the round! 🎉 It was ${correctAnswer}.`;
                 } else {
-                    messageArea.textContent = `${winner.name} won the round!`;
+                    messageArea.textContent = `${winner.name} won the round! It was ${correctAnswer}.`;
                 }
                 
                 // Start next round after delay
@@ -822,6 +852,7 @@
             gameState.players.forEach(player => {
                 player.score = 0;
             });
+            initializeCountryPool();
             
             updateUI();
             updatePlayerList();
