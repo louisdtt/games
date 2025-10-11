@@ -578,6 +578,7 @@
                     showFlag(data.country);
                     messageArea.textContent = 'New round! Guess the flag!';
                     guessInput.disabled = false;
+                    guessInput.value = '';
                     guessInput.focus();
                     break;
                     
@@ -594,6 +595,7 @@
                     updateUI();
                     updatePlayerList();
                     guessInput.disabled = true;
+                    guessInput.value = '';
                     
                     const winner = gameState.players.get(data.winner);
                     const correctAnswer = data.correctAnswer || (gameState.currentFlag && gameState.currentFlag.names ? gameState.currentFlag.names[0] : 'the country');
@@ -608,6 +610,7 @@
                     gameState.roundActive = false;
                     stopTimer();
                     guessInput.disabled = true;
+                    guessInput.value = '';
                     messageArea.textContent = `Time's up! It was ${data.countryName}`;
                     break;
                     
@@ -688,6 +691,7 @@
             showFlag(nextCountry);
             messageArea.textContent = 'New round! Guess the flag!';
             guessInput.disabled = false;
+            guessInput.value = '';
             guessInput.focus();
         }
 
@@ -771,6 +775,7 @@
                 updateUI();
                 updatePlayerList();
                 guessInput.disabled = true;
+                guessInput.value = '';
                 
                 const winner = gameState.players.get(playerId);
                 const correctAnswer = gameState.currentFlag ? gameState.currentFlag.names[0] : 'the country';
@@ -799,6 +804,9 @@
                 type: 'round-timeout',
                 countryName: gameState.currentFlag.names[0]
             });
+            guessInput.disabled = true;
+            guessInput.value = '';
+            messageArea.textContent = `Time's up! It was ${gameState.currentFlag.names[0]}`;
             
             // Start next round after delay
             setTimeout(() => {
@@ -853,6 +861,8 @@
                 player.score = 0;
             });
             initializeCountryPool();
+            guessInput.value = '';
+            guessInput.disabled = true;
             
             updateUI();
             updatePlayerList();
