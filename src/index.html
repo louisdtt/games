@@ -214,8 +214,31 @@
                     </div>
                 </div>
                 
+                <!-- Mastermind Game -->
+                <div class="card card-interactive game-tile fade-in-delay-4" onclick="window.location.href='./mastermind/'" role="button" tabindex="0" onkeypress="handleKeyPress(event, './mastermind/')">
+                    <div class="game-content">
+                        <div class="game-icon">🧩</div>
+                        <h3 class="heading-3 text-center">Mastermind</h3>
+                        <p class="game-description">
+                            The classic code-breaking challenge! Take turns as Codemaker and Codebreaker. 
+                            Use logic and deduction to crack the secret 4-peg code in 10 attempts or less.
+                        </p>
+                        <div class="game-meta">
+                            <div class="player-count">
+                                <span>👥</span>
+                                <span>2 Players</span>
+                            </div>
+                            <div class="difficulty-indicator" title="Difficulty: Medium">
+                                <div class="difficulty-dot active"></div>
+                                <div class="difficulty-dot active"></div>
+                                <div class="difficulty-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Work in Progress -->
-                <div class="card card-interactive game-tile coming-soon fade-in-delay-4" tabindex="0">
+                <div class="card card-interactive game-tile coming-soon fade-in-delay-5" tabindex="0">
                     <div class="game-content">
                         <div class="game-icon">🚧</div>
                         <h3 class="heading-3 text-center">More Games</h3>
@@ -303,7 +326,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const gameTiles = document.querySelectorAll('.game-tile:not(.coming-soon)');
             gameTiles.forEach((tile, index) => {
-                const gameName = index === 0 ? 'GeoDuel' : index === 1 ? 'FlagFight' : 'Unknown';
+                const gameName = index === 0 ? 'GeoDuel' : index === 1 ? 'FlagFight' : index === 2 ? 'Mastermind' : 'Unknown';
                 tile.addEventListener('click', () => trackGameClick(gameName));
             });
         });
