@@ -696,14 +696,31 @@
                 peg.appendChild(pegDiv);
                 peg.classList.add('filled');
                 
+                // Add click handler to remove the peg
+                peg.onclick = () => removeSecretPeg(nextEmptyIndex);
+                
                 gameState.secretCode[nextEmptyIndex] = color;
                 
                 // Check if code is complete
                 const filledSlots = gameState.secretCode.filter(c => c !== null && c !== undefined).length;
                 if (filledSlots === CODE_LENGTH) {
                     submitCodeBtn.disabled = false;
+                } else {
+                    submitCodeBtn.disabled = true;
                 }
             }
+        }
+
+        function removeSecretPeg(position) {
+            const peg = document.querySelector(`#secret-code-pegs .secret-peg[data-position="${position}"]`);
+            peg.innerHTML = '';
+            peg.classList.remove('filled');
+            peg.onclick = null;
+            
+            gameState.secretCode[position] = null;
+            
+            // Disable submit button since code is incomplete
+            submitCodeBtn.disabled = true;
         }
 
         function selectColor(color, palette) {
@@ -749,6 +766,13 @@
         }
 
         function createGuessRow(attemptNumber) {
+            // Check if row already exists
+            const existingRow = document.getElementById(`row-${attemptNumber}`);
+            if (existingRow) {
+                console.log('Row already exists:', `row-${attemptNumber}`);
+                return;
+            }
+            
             const row = document.createElement('div');
             row.className = 'code-row';
             row.id = `row-${attemptNumber}`;
@@ -787,6 +811,10 @@
             
             if (nextEmptyIndex !== -1 && nextEmptyIndex < CODE_LENGTH) {
                 const currentRow = document.getElementById(`row-${gameState.attempts}`);
+                if (!currentRow) {
+                    console.error(`Row not found: row-${gameState.attempts}`);
+                    return;
+                }
                 const pegSlot = currentRow.querySelector(`.peg-slot[data-position="${nextEmptyIndex}"]`);
                 
                 const pegDiv = document.createElement('div');
@@ -795,14 +823,39 @@
                 pegSlot.appendChild(pegDiv);
                 pegSlot.classList.add('filled');
                 
+                // Add click handler to remove the peg
+                pegSlot.onclick = () => removeGuessPeg(nextEmptyIndex);
+                pegSlot.style.cursor = 'pointer';
+                
                 gameState.currentGuess[nextEmptyIndex] = color;
                 
                 // Check if guess is complete
                 const filledSlots = gameState.currentGuess.filter(c => c !== null && c !== undefined).length;
                 if (filledSlots === CODE_LENGTH) {
                     submitGuessBtn.disabled = false;
+                } else {
+                    submitGuessBtn.disabled = true;
                 }
             }
+        }
+
+        function removeGuessPeg(position) {
+            const currentRow = document.getElementById(`row-${gameState.attempts}`);
+            if (!currentRow) {
+                console.error(`Row not found: row-${gameState.attempts}`);
+                return;
+            }
+            const pegSlot = currentRow.querySelector(`.peg-slot[data-position="${position}"]`);
+            
+            pegSlot.innerHTML = '';
+            pegSlot.classList.remove('filled');
+            pegSlot.onclick = null;
+            pegSlot.style.cursor = 'default';
+            
+            gameState.currentGuess[position] = null;
+            
+            // Disable submit button since guess is incomplete
+            submitGuessBtn.disabled = true;
         }
 
         function placePegInGuess(position) {
@@ -826,11 +879,13 @@
         }
 
         function updateCurrentRow() {
+            console.log('updateCurrentRow called, current attempts:', gameState.attempts);
             submitGuessBtn.disabled = true;
             gameState.currentGuess = [null, null, null, null];
             
             // Create next row if not max attempts
             if (gameState.attempts < MAX_ATTEMPTS) {
+                console.log('Creating row:', gameState.attempts);
                 createGuessRow(gameState.attempts);
             }
         }
