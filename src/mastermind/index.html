@@ -66,7 +66,7 @@
         .peg.red { background: linear-gradient(135deg, #ef4444, #dc2626); }
         .peg.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
         .peg.green { background: linear-gradient(135deg, #10b981, #059669); }
-        .peg.yellow { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .peg.yellow { background: linear-gradient(135deg, #fde047, #facc15); }
         .peg.purple { background: linear-gradient(135deg, #a855f7, #9333ea); }
         .peg.orange { background: linear-gradient(135deg, #f97316, #ea580c); }
         .peg.white { background: linear-gradient(135deg, #f3f4f6, #d1d5db); }
@@ -657,26 +657,29 @@
                 case 'play-again':
                     resetGame();
                     gameOverModal.classList.add('hidden');
-                    startGame();
+                    startGame(true); // Pass true to indicate this is a replay
                     break;
             }
         }
 
         // --- Game Logic ---
-        function startGame() {
+        function startGame(isReplay = false) {
             setupScreen.classList.add('hidden');
             gameScreen.classList.remove('hidden');
             
-            // Host is always codemaker first, guest is always codebreaker first
-            if (isHost) {
-                gameState.isCodemaker = true;
-                // Tell guest to be codebreaker
-                connection.send({
-                    type: 'start-game',
-                    hostIsCodemaker: true
-                });
-            } else {
-                gameState.isCodemaker = false;
+            // Only set initial roles on first game, not on replay
+            if (!isReplay) {
+                // Host is always codemaker first, guest is always codebreaker first
+                if (isHost) {
+                    gameState.isCodemaker = true;
+                    // Tell guest to be codebreaker
+                    connection.send({
+                        type: 'start-game',
+                        hostIsCodemaker: true
+                    });
+                } else {
+                    gameState.isCodemaker = false;
+                }
             }
             
             startGameUI();
@@ -1178,7 +1181,9 @@
                 secretCode: gameState.secretCode
             });
             
-            showGameOver(youWon, attempts, gameState.isCodemaker ? null : gameState.secretCode);
+            // If you're the codemaker, you don't need to see the code (you made it)
+            // If you're the codebreaker, pass null here - you'll get the code from the opponent's game-over message
+            showGameOver(youWon, attempts, null);
         }
 
         function showGameOver(youWon, attempts, secretCode) {
@@ -1200,7 +1205,7 @@
                 }
             }
             
-            // Show secret code if codebreaker lost
+            // Show secret code to codebreaker (whether they won or lost)
             if (secretCode && !gameState.isCodemaker) {
                 revealedCodeEl.innerHTML = '<p class="text-sm text-gray-400 mb-2">The secret code was:</p>' +
                     '<div class="flex justify-center gap-2">' +
@@ -1209,6 +1214,10 @@
             } else {
                 revealedCodeEl.innerHTML = '';
             }
+            
+            // Reset play again button state
+            playAgainBtn.disabled = false;
+            playAgainBtn.textContent = 'Play Again';
             
             gameOverModal.classList.remove('hidden');
         }
@@ -1250,7 +1259,7 @@
                 resetGame();
                 connection.send({ type: 'play-again' });
                 gameOverModal.classList.add('hidden');
-                startGame();
+                startGame(true); // Pass true to indicate this is a replay
             } else {
                 connection.send({ type: 'play-again' });
                 playAgainBtn.disabled = true;
