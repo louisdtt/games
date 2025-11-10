@@ -470,16 +470,47 @@
 
         // --- P2P Connection Handling ---
         function initializePeer(hostIdToConnectTo) {
-            peer = new Peer();
+            console.log('initializePeer called, hostIdToConnectTo:', hostIdToConnectTo);
+            
+            try {
+                // Create peer with minimal config - let PeerJS handle defaults
+                peer = new Peer();
+                console.log('Peer created, waiting for open event...');
+            } catch (err) {
+                console.error('Failed to create Peer:', err);
+                alert('Failed to initialize connection. Please refresh and try again.');
+                createGameBtn.disabled = false;
+                createGameBtn.textContent = 'Create Game';
+                joinGameBtn.disabled = false;
+                joinGameBtn.textContent = 'Join';
+                return;
+            }
+            
+            // Add a timeout in case the peer server is not responding
+            const timeout = setTimeout(() => {
+                if (!myPlayerId) {
+                    console.error('Peer open event timeout - server may be unavailable');
+                    alert('Unable to connect to game server. The server may be temporarily unavailable. Please try again later.');
+                    createGameBtn.disabled = false;
+                    createGameBtn.textContent = 'Create Game';
+                    joinGameBtn.disabled = false;
+                    joinGameBtn.textContent = 'Join';
+                    if (peer) peer.destroy();
+                }
+            }, 15000); // 15 second timeout
 
             peer.on('open', id => {
+                clearTimeout(timeout);
+                console.log('Peer opened with ID:', id);
                 myPlayerId = id;
                 myPlayerName = generatePlayerName();
                 myNameEl.textContent = myPlayerName;
                 
                 if (hostIdToConnectTo) {
+                    console.log('Connecting to host:', hostIdToConnectTo);
                     connectToHost(hostIdToConnectTo);
                 } else {
+                    console.log('Showing host info');
                     hostIdInput.value = id;
                     createGameBtn.classList.add('hidden');
                     hostInfo.classList.remove('hidden');
@@ -487,17 +518,23 @@
             });
 
             peer.on('connection', newConn => {
+                console.log('Incoming connection from:', newConn.peer);
                 if (isHost && !connection) {
                     setupConnection(newConn);
                     opponentId = newConn.peer;
                 } else {
+                    console.log('Rejecting connection (already connected or not host)');
                     newConn.close(); // Only 2 players allowed
                 }
             });
             
             peer.on('error', err => {
                 console.error("PeerJS error:", err);
-                alert('Connection error. Please refresh and try again.');
+                createGameBtn.disabled = false;
+                createGameBtn.textContent = 'Create Game';
+                joinGameBtn.disabled = false;
+                joinGameBtn.textContent = 'Join';
+                alert('Connection error: ' + err.type + '. Please refresh and try again.');
             });
         }
 
@@ -670,10 +707,16 @@
         }
 
         function setupCodemakerUI() {
+            // Reset the secret code state
+            gameState.secretCode = [null, null, null, null];
+            
             const secretPegs = document.querySelectorAll('#secret-code-pegs .secret-peg');
             secretPegs.forEach((peg, index) => {
                 peg.className = 'secret-peg peg-slot';
                 peg.innerHTML = '';
+                peg.classList.remove('filled');
+                peg.onclick = null;
+                peg.dataset.position = index;
             });
             
             const colorChoices = document.querySelectorAll('#codemaker-palette .color-choice');
@@ -685,11 +728,16 @@
         }
 
         function selectColorAndFill(color) {
+            console.log('selectColorAndFill called with color:', color);
+            console.log('Current secretCode:', gameState.secretCode);
+            
             // Find the next empty slot
             const nextEmptyIndex = gameState.secretCode.findIndex((c, i) => c === null || c === undefined);
+            console.log('Next empty index:', nextEmptyIndex);
             
             if (nextEmptyIndex !== -1 && nextEmptyIndex < CODE_LENGTH) {
                 const peg = document.querySelector(`#secret-code-pegs .secret-peg[data-position="${nextEmptyIndex}"]`);
+                console.log('Found peg element:', peg);
                 const pegDiv = document.createElement('div');
                 pegDiv.className = `peg ${color}`;
                 peg.innerHTML = '';
@@ -1087,6 +1135,12 @@
             const row = document.getElementById(`codemaker-row-${attempt}`);
             row.classList.remove('current');
             row.classList.add('completed');
+            
+            // Remove the current-feedback-area ID so it doesn't interfere with the next guess
+            const feedbackArea = row.querySelector('#current-feedback-area');
+            if (feedbackArea) {
+                feedbackArea.id = '';
+            }
             
             // Disable feedback pegs
             const feedbackPegs = row.querySelectorAll('.feedback-peg');
