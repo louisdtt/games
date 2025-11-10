@@ -1234,9 +1234,31 @@
             gameState.pendingGuess = null;
             gameState.manualFeedback = { black: 0, white: 0 };
             
+            // Clear game boards
             gameBoard.innerHTML = '';
             codemakerGameBoard.innerHTML = '';
+            
+            // Reset all UI elements
             submitFeedbackBtn.classList.add('hidden');
+            submitCodeBtn.classList.remove('hidden');
+            submitCodeBtn.disabled = true;
+            submitGuessBtn.disabled = true;
+            
+            // Show codemaker palette again
+            document.getElementById('codemaker-palette').classList.remove('hidden');
+            
+            // Hide codemaker watching area
+            codemakerWatchingArea.classList.add('hidden');
+            
+            // Reset attempt counters
+            attemptsCountEl.textContent = '0';
+            codemakerAttemptsCountEl.textContent = '0';
+            
+            // Reset the secret code display text
+            const codemakerSecretText = document.querySelector('#codemaker-area .secret-code p');
+            if (codemakerSecretText) {
+                codemakerSecretText.textContent = 'Set Your Secret Code';
+            }
             
             // Clear color selections
             document.querySelectorAll('.color-choice').forEach(c => c.classList.remove('selected'));
